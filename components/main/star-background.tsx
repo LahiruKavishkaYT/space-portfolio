@@ -6,11 +6,21 @@ import * as random from "maath/random";
 import { useState, useRef, Suspense } from "react";
 import type { Points as PointsType } from "three";
 
+const validateSphereData = (data: Float32Array): Float32Array => {
+  for (let i = 0; i < data.length; i++) {
+    if (!Number.isFinite(data[i])) {
+      data[i] = 0;
+    }
+  }
+  return data;
+};
+
 export const StarBackground = (props: PointsProps) => {
   const ref = useRef<PointsType | null>(null);
-  const [sphere] = useState(() =>
-    random.inSphere(new Float32Array(5000), { radius: 1.2 })
-  );
+  const [sphere] = useState(() => {
+    const sphereData = random.inSphere(new Float32Array(5000), { radius: 1.2 });
+    return validateSphereData(sphereData);
+  });
 
   useFrame((_state, delta) => {
     if (ref.current) {
@@ -24,7 +34,7 @@ export const StarBackground = (props: PointsProps) => {
       <Points
         ref={ref}
         stride={3}
-        positions={new Float32Array(sphere)}
+        positions={sphere}
         frustumCulled
         {...props}
       >

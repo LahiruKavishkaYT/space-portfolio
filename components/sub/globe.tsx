@@ -6,9 +6,19 @@ import { Mesh } from "three";
 import { Points, PointMaterial } from "@react-three/drei";
 import * as random from "maath/random";
 
+const validateSphereData = (data: Float32Array): Float32Array => {
+  for (let i = 0; i < data.length; i++) {
+    if (!Number.isFinite(data[i])) {
+      data[i] = 0;
+    }
+  }
+  return data;
+};
+
 export const Globe = () => {
   const points = useRef<Mesh>(null);
-  const sphere = random.inSphere(new Float32Array(5000), { radius: 1.2 });
+  const sphereData = random.inSphere(new Float32Array(5000), { radius: 1.2 });
+  const sphere = validateSphereData(sphereData);
 
   useFrame((state, delta) => {
     if (points.current) {
