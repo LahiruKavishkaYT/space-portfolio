@@ -1,24 +1,40 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Mesh } from "three";
 import { Points, PointMaterial } from "@react-three/drei";
 import * as random from "maath/random";
 
 const validateSphereData = (data: Float32Array): Float32Array => {
+  // Create a new array to avoid modifying the original
+  const validatedData = new Float32Array(data.length);
+  
   for (let i = 0; i < data.length; i++) {
-    if (!Number.isFinite(data[i])) {
-      data[i] = 0;
+    // Check for NaN, Infinity, or invalid numbers
+    if (!Number.isFinite(data[i]) || Number.isNaN(data[i])) {
+      // Use a small random number instead of 0 to avoid clustering
+      validatedData[i] = (Math.random() - 0.5) * 0.1;
+    } else {
+      validatedData[i] = data[i];
     }
   }
-  return data;
+  return validatedData;
 };
 
 export const Globe = () => {
   const points = useRef<Mesh>(null);
-  const sphereData = random.inSphere(new Float32Array(5000), { radius: 1.2 });
-  const sphere = validateSphereData(sphereData);
+  
+  const sphere = useMemo(() => {
+    try {
+      const sphereData = random.inSphere(new Float32Array(5000), { radius: 1.2 });
+      return validateSphereData(sphereData);
+    } catch (error) {
+      console.error("Error generating sphere data:", error);
+      // Return a fallback sphere if generation fails
+      return new Float32Array(5000).map(() => (Math.random() - 0.5) * 2);
+    }
+  }, []);
 
   useFrame((state, delta) => {
     if (points.current) {

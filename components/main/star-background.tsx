@@ -7,19 +7,32 @@ import { useState, useRef, Suspense } from "react";
 import type { Points as PointsType } from "three";
 
 const validateSphereData = (data: Float32Array): Float32Array => {
+  // Create a new array to avoid modifying the original
+  const validatedData = new Float32Array(data.length);
+  
   for (let i = 0; i < data.length; i++) {
-    if (!Number.isFinite(data[i])) {
-      data[i] = 0;
+    // Check for NaN, Infinity, or invalid numbers
+    if (!Number.isFinite(data[i]) || Number.isNaN(data[i])) {
+      // Use a small random number instead of 0 to avoid clustering
+      validatedData[i] = (Math.random() - 0.5) * 0.1;
+    } else {
+      validatedData[i] = data[i];
     }
   }
-  return data;
+  return validatedData;
 };
 
 export const StarBackground = (props: PointsProps) => {
   const ref = useRef<PointsType | null>(null);
   const [sphere] = useState(() => {
-    const sphereData = random.inSphere(new Float32Array(5000), { radius: 1.2 });
-    return validateSphereData(sphereData);
+    try {
+      const sphereData = random.inSphere(new Float32Array(5000), { radius: 1.2 });
+      return validateSphereData(sphereData);
+    } catch (error) {
+      console.error("Error generating sphere data:", error);
+      // Return a fallback sphere if generation fails
+      return new Float32Array(5000).map(() => (Math.random() - 0.5) * 2);
+    }
   });
 
   useFrame((_state, delta) => {
