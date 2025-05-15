@@ -7,14 +7,11 @@ import { Points, PointMaterial } from "@react-three/drei";
 import * as random from "maath/random";
 
 const validateSphereData = (data: Float32Array): Float32Array => {
-  // Create a new array to avoid modifying the original
   const validatedData = new Float32Array(data.length);
   
   for (let i = 0; i < data.length; i++) {
-    // Check for NaN, Infinity, or invalid numbers
     if (!Number.isFinite(data[i]) || Number.isNaN(data[i])) {
-      // Use a small random number instead of 0 to avoid clustering
-      validatedData[i] = (Math.random() - 0.5) * 0.1;
+      validatedData[i] = 0;
     } else {
       validatedData[i] = data[i];
     }
@@ -31,8 +28,8 @@ export const Globe = () => {
       return validateSphereData(sphereData);
     } catch (error) {
       console.error("Error generating sphere data:", error);
-      // Return a fallback sphere if generation fails
-      return new Float32Array(5000).map(() => (Math.random() - 0.5) * 2);
+      const fallbackData = new Float32Array(5000).map(() => (Math.random() - 0.5) * 2);
+      return validateSphereData(fallbackData);
     }
   }, []);
 
